@@ -6,26 +6,36 @@ require 'pp'
 require_relative '../test/calculator_test.rb'
 
 overlaps = {}
-TestCalculator.test_methods.each do |method|
-  analyzer = Rcov::CodeCoverageAnalyzer.new
-  analyzer.run_hooked do
-    TestCalculator.new(nil).send method   
-  end
-  analyzer.analyzed_files.each do |file|
-    next if file =~ /gems/
-    overlaps[file] ||= {}
-    lines, marked_info, count_info = analyzer.data(file)
-    marked_info.each_with_index do |elem, index|
-      overlaps[file][index] ||= {}
-      if elem
-        overlaps[file][index][:calculator_test] ||= []
-        overlaps[file][index][:calculator_test] << method.to_sym
+
+Dir.glob(File.expand_path('../test/**/*.rb', File.dirname(__FILE__))) do |test_file|
+
+  existing_classes = ObjectSpace.each_object(Class).to_a
+  require test_file
+  new_classes = ObjectSpace.each_object(Class).to_a - existing_classes
+  test_cases = new_classes.select{|klass| klass < MiniTest::Unit::TestCase}
+
+  puts test_cases
+
+  TestCalculator.test_methods.each do |method|
+    analyzer = Rcov::CodeCoverageAnalyzer.new
+    analyzer.run_hooked do
+      TestCalculator.new(nil).send method   
+    end
+    analyzer.analyzed_files.each do |file|
+      next if file =~ /gems/
+      overlaps[file] ||= {}
+      lines, marked_info, count_info = analyzer.data(file)
+      marked_info.each_with_index do |elem, index|
+        overlaps[file][index] ||= {}
+        if elem
+          overlaps[file][index][:calculator_test] ||= []
+          overlaps[file][index][:calculator_test] << method.to_sym
+        end
       end
     end
   end
 end
-
-pp overlaps
+# pp overlaps
 
 #file = analyzer.analyzed_files[1] 
 #lines, marked_info, count_info = analyzer.data(file)
@@ -39,3 +49,4 @@ pp overlaps
 #  'sum.rb' => {}
 # }
 #
+
