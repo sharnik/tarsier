@@ -1,0 +1,41 @@
+#!/usr/bin/env ruby
+
+require 'require_relative'
+require 'rcov'
+require 'pp'
+require_relative '../test/calculator_test.rb'
+
+overlaps = {}
+TestCalculator.test_methods.each do |method|
+  analyzer = Rcov::CodeCoverageAnalyzer.new
+  analyzer.run_hooked do
+    TestCalculator.new(nil).send method   
+  end
+  analyzer.analyzed_files.each do |file|
+    next if file =~ /gems/
+    overlaps[file] ||= {}
+    lines, marked_info, count_info = analyzer.data(file)
+    marked_info.each_with_index do |elem, index|
+      overlaps[file][index] ||= {}
+      if elem
+        overlaps[file][index][:calculator_test] ||= []
+        overlaps[file][index][:calculator_test] << method.to_sym
+      end
+    end
+  end
+end
+
+pp overlaps
+
+#file = analyzer.analyzed_files[1] 
+#lines, marked_info, count_info = analyzer.data(file)
+
+# {
+#  'calculator.rb' => {
+#    1 => {:calculator_test => :test_should_multiplicate},
+#    2 => {:calculator_test => [:test_should_multiplicate, :should_sum]},
+#    3 => {}
+#  },
+#  'sum.rb' => {}
+# }
+#

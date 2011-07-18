@@ -1,5 +1,8 @@
+require 'require_relative'
+
 require_relative '../lib/calculator'
-require 'minitest/autorun'
+require 'minitest/unit'
+# require 'minitest/autorun'
 require 'mocha'
 
 class TestCalculator < MiniTest::Unit::TestCase
