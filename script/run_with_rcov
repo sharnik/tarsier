@@ -1,62 +1,56 @@
 #!/usr/bin/env ruby
 
-require 'require_relative'
 require 'test/unit'
 require 'rcov'
 require 'pp'
-require_relative '../test/calculator_test.rb'
+require 'mocha'
 
+module Overlaps
+  @@data = {}
+  def self.data
+    @@data
+  end
+end
 
-def get_overlaps
-  overlaps = {}
-
-  Dir.glob(File.expand_path('../test/**/*.rb', File.dirname(__FILE__))) do |test_file|
-    test_cases = test_cases_from_file(test_file)
-    pp [test_file, test_cases]
-=begin
-    test_cases.each do |test_case|
-      analyzer = Rcov::CodeCoverageAnalyzer.new
-      analyzer.run_hooked do
-        test_case.new(nil).run
+module Test
+  module Unit
+    class AutoRunner
+      alias :run_without_analyzer :run
+      def run
+        result = run_without_analyzer
+        pp Overlaps.data
+        result
       end
-      analyzer.analyzed_files.each do |file|
-        next if file =~ /gems/
-        overlaps[file] ||= {}
-        lines, marked_info, count_info = analyzer.data(file)
-        marked_info.each_with_index do |elem, index|
-          overlaps[file][index] ||= {}
-          if elem
-            overlaps[file][index][test_file] ||= []
-            overlaps[file][index][test_file] << test_case.to_sym
+    end
+  end
+end
+
+module Test
+  module Unit
+    class TestCase
+      alias :run_without_analyzer :run
+      def run(*args, &block)
+        analyzer = Rcov::CodeCoverageAnalyzer.new
+        analyzer.run_hooked do
+          run_without_analyzer(*args, &block)
+        end
+        analyzer.analyzed_files.each do |file|
+          next if file =~ /gems/ || file =~ /ruby-1.8.7-p334/
+          Overlaps.data[file] ||= {}
+          lines, marked_info, count_info = analyzer.data(file)
+          marked_info.each_with_index do |elem, index|
+            Overlaps.data[file][index] ||= {}
+            if elem
+              Overlaps.data[file][index][self.class.to_s] ||= []
+              Overlaps.data[file][index][self.class.to_s] << self.method_name.to_sym
+            end
           end
         end
       end
     end
-=end
-  end
-  return overlaps
-end
-
-# {
-#  'calculator.rb' => {
-#    1 => {:calculator_test => :test_should_multiplicate},
-#    2 => {:calculator_test => [:test_should_multiplicate, :should_sum]},
-#    3 => {}
-#  },
-#  'sum.rb' => {}
-# }
-#
-
-class Object
-  def at_exit
   end
 end
 
-def test_cases_from_file(test_file)
-  existing_classes = ObjectSpace.each_object(Class).to_a
+Dir.glob(File.expand_path('../test/**/*.rb', File.dirname(__FILE__))) do |test_file|
   require test_file
-  new_classes = ObjectSpace.each_object(Class).to_a - existing_classes
-  new_classes.select{|klass| klass < Test::Unit::TestCase}
 end
-
-pp get_overlaps
