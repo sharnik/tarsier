@@ -1,53 +1,41 @@
 #!/usr/bin/env ruby
 
 require 'require_relative'
+require 'test/unit'
 require 'rcov'
 require 'pp'
 require_relative '../test/calculator_test.rb'
 
-class Object
-  def at_exit
-  end
-end
 
-overlaps = {}
+def get_overlaps
+  overlaps = {}
 
-def test_cases_from_file(test_file)
-  existing_classes = ObjectSpace.each_object(Class).to_a
-  require test_file
-  new_classes = ObjectSpace.each_object(Class).to_a - existing_classes
-  new_classes.select{|klass| klass < MiniTest::Unit::TestCase && klass.to_s != 'MiniTest::Spec'}
-end
-require "ruby-debug";Debugger.start;debugger;
-Dir.glob(File.expand_path('../test/**/*.rb', File.dirname(__FILE__))) do |test_file|
-  test_cases = test_cases_from_file(test_file)
-  pp [test_file, test_cases]
-
-  test_cases.each do |test_case|
-    test_case.test_methods.each do |method|
+  Dir.glob(File.expand_path('../test/**/*.rb', File.dirname(__FILE__))) do |test_file|
+    test_cases = test_cases_from_file(test_file)
+    pp [test_file, test_cases]
+=begin
+    test_cases.each do |test_case|
       analyzer = Rcov::CodeCoverageAnalyzer.new
       analyzer.run_hooked do
-        test_case.new(nil).send method
+        test_case.new(nil).run
       end
       analyzer.analyzed_files.each do |file|
         next if file =~ /gems/
-          overlaps[file] ||= {}
+        overlaps[file] ||= {}
         lines, marked_info, count_info = analyzer.data(file)
         marked_info.each_with_index do |elem, index|
           overlaps[file][index] ||= {}
           if elem
-            overlaps[file][index][:calculator_test] ||= []
-            overlaps[file][index][:calculator_test] << method.to_sym
+            overlaps[file][index][test_file] ||= []
+            overlaps[file][index][test_file] << test_case.to_sym
           end
         end
       end
     end
+=end
   end
+  return overlaps
 end
-# pp overlaps
-
-#file = analyzer.analyzed_files[1]
-#lines, marked_info, count_info = analyzer.data(file)
 
 # {
 #  'calculator.rb' => {
@@ -59,3 +47,16 @@ end
 # }
 #
 
+class Object
+  def at_exit
+  end
+end
+
+def test_cases_from_file(test_file)
+  existing_classes = ObjectSpace.each_object(Class).to_a
+  require test_file
+  new_classes = ObjectSpace.each_object(Class).to_a - existing_classes
+  new_classes.select{|klass| klass < Test::Unit::TestCase}
+end
+
+pp get_overlaps

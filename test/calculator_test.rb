@@ -1,11 +1,9 @@
 require 'require_relative'
-
 require_relative '../lib/calculator'
-require 'minitest/unit'
-# require 'minitest/autorun'
+require 'test/unit'
 require 'mocha'
 
-class TestCalculator < MiniTest::Unit::TestCase
+class TestCalculator < Test::Unit::TestCase
   def test_that_runs_internal_methods
     assert_equal 9.0, Calculator.process('3*3')
   end
