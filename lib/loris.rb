@@ -1,8 +1,5 @@
-#!/usr/bin/env ruby
-
 require 'test/unit'
 require 'rcov'
-require 'pp'
 require 'mocha'
 
 module Overlaps
@@ -64,7 +61,6 @@ module Test
       def run
         result = run_without_analyzer
         Overlaps::Report.puke_out_report
-#        pp Overlaps.data
         result
       end
     end
