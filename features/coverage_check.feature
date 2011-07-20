@@ -3,6 +3,7 @@ Feature: Script
   Background:
     Given a file named "app/calculator.rb" with:
       """
+      require 'require_relative'
       require_relative 'calculations/multiplication'
       require_relative 'calculations/sum'
       class Calculator
@@ -30,7 +31,7 @@ Feature: Script
         end
       end
       """
-    And a file named "app/calculations/addition.rb" with:
+    And a file named "app/calculations/sum.rb" with:
       """
       module Calculations
         class Sum
@@ -44,7 +45,7 @@ Feature: Script
     And a file named "test/calculator_test.rb" with:
       """
       require 'require_relative'
-      require_relative '../lib/calculator'
+      require_relative '../app/calculator'
       require 'test/unit'
       require 'mocha'
 
@@ -62,7 +63,7 @@ Feature: Script
     And a file named "test/multiplication_test.rb" with:
       """
       require 'require_relative'
-      require_relative '../lib/calculator'
+      require_relative '../app/calculator'
       require 'test/unit'
       require 'mocha'
 
@@ -73,10 +74,10 @@ Feature: Script
         end
       end
       """
-    And a file named "test/addition_test.rb" with:
+    And a file named "test/sum_test.rb" with:
       """
       require 'require_relative'
-      require_relative '../lib/calculator'
+      require_relative '../app/calculator'
       require 'test/unit'
 
       class TestSum < Test::Unit::TestCase
@@ -87,23 +88,23 @@ Feature: Script
       end
       """
 
+  @wip
   Scenario: Looking for multicoverage
-    When debug
-    When I run `loris`
+    When I run `ruby ../../lib/loris.rb`
     Then the output should contain:
       """
       TestCalculator (test_that_runs_internal_methods), TestMultiplication (test_eval)
       """
     Then the output should contain:
       """
-      /Users/krzysztof.herod/dev/rcov-thingy/test/../lib/calculations/multiplication.rb
-      4:     def self.eval(input)
-      5:       num1, num2 = input.split /\s*\*\s*/
-      6:       num1.to_f * num2.to_f
+      app/calculations/multiplication.rb
+      3:     def self.eval(input)
+      4:       num1, num2 = input.split /\s*\*\s*/
+      5:       num1.to_f * num2.to_f
       """
 
   Scenario: Looking for coverage of a line in a file
-    When I run `loris app/calculations/multiplication.rb 4`
+    When I run `lib/loris.rb app/calculations/multiplication.rb 4`
     Then the output should contain:
       """
       TestCalculator (test_that_runs_internal_methods), TestMultiplication (test_eval)
