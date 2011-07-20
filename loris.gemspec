@@ -17,4 +17,12 @@ Gem::Specification.new do |s|
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   s.require_paths = ["lib"]
+
+  s.add_dependency('rcov', '>= 0.9.9')
+
+  s.add_development_dependency('mocha', '>= 0.9.12')
+  s.add_development_dependency('aruba', '>= 0.4.3')
+  s.add_development_dependency('require_relative', '>= 1.0.2')
+  s.add_development_dependency('rspec', '>= 2.6.0')
+  s.add_development_dependency('rake', '>= 0.9.2')
 end

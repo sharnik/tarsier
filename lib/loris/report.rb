@@ -7,7 +7,7 @@ module Loris
     #
     # @param [Hash] options for output
     # @return nil
-    def self.puke_out_report(options)
+    def self.puke_out_report(options = {})
       groups = []
       Loris.data.each do |file, lines|
         lines.each do |line_number, test_cases|
