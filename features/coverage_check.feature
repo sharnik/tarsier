@@ -88,7 +88,6 @@ Feature: Script
       end
       """
 
-  @wip
   Scenario: Looking for multicoverage
     When I run `ruby ../../lib/loris.rb`
     Then the output should contain:
@@ -104,8 +103,8 @@ Feature: Script
       """
 
   Scenario: Looking for coverage of a line in a file
-    When I run `lib/loris.rb app/calculations/multiplication.rb 4`
-    Then the output should contain:
-      """
-      TestCalculator (test_that_runs_internal_methods), TestMultiplication (test_eval)
-      """
+    When I run `ruby ../../lib/loris.rb app/calculations/sum.rb 3`
+    Then the output should contain "TestSum (test_eval)"
+    And the output should not contain "TestCalculator"
+    And the output should not contain "TestMultiplication"
+

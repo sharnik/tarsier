@@ -21,7 +21,7 @@ module Test
           run_without_analyzer(*args, &block)
         end
         analyzer.analyzed_files.each do |file|
-          next if file =~ /gems/ || file =~ /ruby-1.8.7-p334/ || file =~ /_test\.rb/
+          next if file =~ /gems/ || file =~ /ruby/ || file =~ /_test\.rb/ || file =~ /loris\/monkeypatching.rb/
           Loris.data[file] ||= {}
           lines, marked_info, count_info = analyzer.data(file)
           Loris.code_lines[file] = lines
