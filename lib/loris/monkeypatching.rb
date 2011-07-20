@@ -1,5 +1,8 @@
-module Test
-  module Unit
+if defined?(Test::Unit)
+  puts 'Loads Test::Unit monkeypatching.'
+
+  # Loads Test::Unit monkeypatching to run the rcov analyzer
+  module Test::Unit
     class AutoRunner
       alias :run_without_analyzer :run
       def run
@@ -8,11 +11,7 @@ module Test
         end
       end
     end
-  end
-end
 
-module Test
-  module Unit
     class TestCase
       alias :run_without_analyzer :run
       def run(*args, &block)
@@ -22,5 +21,7 @@ module Test
       end
     end
   end
-end
 
+else
+  puts 'No Test::Unit testcases where loaded.'
+end
