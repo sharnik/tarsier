@@ -17,13 +17,13 @@ module Loris
     end
   end
 
-  def self.test_case_wrapper
+  def self.test_suite_wrapper
     result = yield
     Loris::Report.puke_out_report
     result
   end
 
-  def self.test_suite_wrapper(sender)
+  def self.test_method_wrapper(sender)
     analyzer = Rcov::CodeCoverageAnalyzer.new
     analyzer.run_hooked do
       yield
