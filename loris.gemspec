@@ -25,4 +25,5 @@ Gem::Specification.new do |s|
   s.add_development_dependency('require_relative', '>= 1.0.2')
   s.add_development_dependency('rspec', '>= 2.6.0')
   s.add_development_dependency('rake', '>= 0.9.2')
+  s.add_development_dependency('ruby-debug', '>= 0.10.3')
 end
