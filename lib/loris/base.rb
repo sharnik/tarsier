@@ -13,7 +13,7 @@ module Loris
     if arguments[:file] and arguments[:line_number]
       :line
     else
-      :project
+      :suite
     end
   end
 

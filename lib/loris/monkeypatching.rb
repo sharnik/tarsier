@@ -10,13 +10,13 @@ if defined?(Test::Unit)
           run_without_analyzer
         end
       end
+    end
 
-      class TestCase
-        alias :run_without_analyzer :run
-        def run(*args, &block)
-          Loris.test_suite_wrapper(self) do
-            run_without_analyzer(*args, &block)
-          end
+    class TestCase
+      alias :run_without_analyzer :run
+      def run(*args, &block)
+        Loris.test_method_wrapper(self) do
+          run_without_analyzer(*args, &block)
         end
       end
     end
