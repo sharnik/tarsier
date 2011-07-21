@@ -45,6 +45,7 @@ module Loris
 
   def self.run(options)
     # Loads the test suite
+    Loris.arguments = options
     tests_path = File.expand_path(options[:tests_path], Dir.pwd)
     Dir.glob(File.expand_path('**/*.rb', tests_path)) do |test_file|
       require test_file
