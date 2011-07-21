@@ -43,12 +43,13 @@ module Loris
     end
   end
 
-  def self.run
+  def self.run(options)
     # Loads the test suite
-    Dir.glob(File.expand_path('test/**/*.rb', Dir.pwd)) do |test_file|
+    tests_path = File.expand_path(options[:tests_path], Dir.pwd)
+    Dir.glob(File.expand_path('**/*.rb', tests_path)) do |test_file|
       require test_file
     end
-  
+
     # Requires our monkeypatching later, to make sure it's not overwritten
     require 'loris/monkeypatching.rb'
   end
