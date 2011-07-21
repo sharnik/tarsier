@@ -2,8 +2,8 @@ require 'test/unit'
 require 'rcov'
 require 'mocha'
 require 'loris/utils.rb'
+require 'loris/base.rb'
 require 'loris/report.rb'
-require 'loris/data_collection.rb'
 require 'loris/monkeypatching.rb'
 
 Loris.arguments = {:file => ARGV.first, :line_number => ARGV.last}

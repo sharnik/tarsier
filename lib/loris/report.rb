@@ -9,29 +9,9 @@ module Loris
     # @param [Hash] options for output
     # @return nil
     def self.puke_out_report(options = {})
-      groups = []
-      Loris.data.each do |file, lines|
-        lines.each do |line_number, test_cases|
-          if condition(test_cases, file, line_number)
-            groups << test_cases unless groups.index(test_cases)
-          end
-        end
-      end
-
+      groups = test_case_groups(Loris.data)
       groups.sort! {|a, b| b.keys.length <=> a.keys.length }
-
-      grouped_lines = []
-      Loris.data.each do |file, lines|
-        lines.each do |line_number, test_cases|
-          group_id = groups.index(test_cases)
-          unless group_id.nil?
-            grouped_lines[group_id] ||= {}
-            grouped_lines[group_id][file] ||= []
-            grouped_lines[group_id][file] << line_number
-          end
-        end
-      end
-
+      grouped_lines = data_grouped(Loris.data, groups)
       groups.each_with_index do |group, index|
         if Loris.mode == :find_files
           header = "\nLine #{Loris.arguments[:line_number]} in file #{Loris.arguments[:file]}"
@@ -59,6 +39,33 @@ module Loris
         else
           test_cases.length > 1
         end
+      end
+
+      def self.test_case_groups(data)
+        groups = []
+        Loris.data.each do |file, lines|
+          lines.each do |line_number, test_cases|
+            if condition(test_cases, file, line_number)
+              groups << test_cases unless groups.index(test_cases)
+            end
+          end
+        end
+        groups
+      end
+
+      def self.data_grouped(data, groups)
+        grouped_lines = []
+        Loris.data.each do |file, lines|
+          lines.each do |line_number, test_cases|
+            group_id = groups.index(test_cases)
+            unless group_id.nil?
+              grouped_lines[group_id] ||= {}
+              grouped_lines[group_id][file] ||= []
+              grouped_lines[group_id][file] << line_number
+            end
+          end
+        end
+        grouped_lines
       end
   end
 end
