@@ -13,7 +13,7 @@ module Loris
       groups.sort! {|a, b| b.keys.length <=> a.keys.length }
       grouped_lines = data_grouped(Loris.data, groups)
       groups.each_with_index do |group, index|
-        if Loris.mode == :find_files
+        if Loris.mode == :line
           header = "\nLine #{Loris.arguments[:line_number]} in file #{Loris.arguments[:file]}"
           header << " has been touched by #{group.length} test case(s): "
         else
@@ -21,7 +21,7 @@ module Loris
         end
         header << group.map { |suite, cases| "#{suite} (#{cases.join(', ')})" }.join(', ')
         STDOUT.puts header
-        if Loris.mode != :find_files
+        if Loris.mode != :line
           grouped_lines[index].each do |file, lines|
             STDOUT.puts file
             lines.sort.each do |line|
@@ -34,7 +34,7 @@ module Loris
 
     private
       def self.condition(test_cases, file, line_number)
-        if Loris.mode == :find_files
+        if Loris.mode == :line
           file == File.expand_path(Loris.arguments[:file]) && (line_number + 1) == Loris.arguments[:line_number].to_i
         else
           test_cases.length > 1

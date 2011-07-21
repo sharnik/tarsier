@@ -11,9 +11,9 @@ module Loris
 
   def self.mode
     if arguments[:file] and arguments[:line_number]
-      :find_files
+      :line
     else
-      :collect_tests
+      :project
     end
   end
 
