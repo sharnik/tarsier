@@ -1,4 +1,4 @@
-if defined?(RAILS_ENV)
+if defined?(ActiveSupport::Testing::SetupAndTeardown::ForClassicTestUnit)
   puts 'Loads ActiveSupport monkeypatching.'
   module ActiveSupport
     module Testing
