@@ -7,7 +7,8 @@ namespace :loris do
     options = {
       :tests_path => ENV['tests_path'] || 'test',
       :file => ENV['file'],
-      :line_number => ENV['line_number']
+      :line_number => ENV['line_number'],
+      :exclude_paths => ENV['exclude_paths'] || ''
     }
     require 'loris'
     Loris.run(options)

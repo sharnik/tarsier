@@ -46,13 +46,30 @@ module Loris
   def self.run(options)
     # Loads the test suite
     Loris.arguments = options
-    tests_path = File.expand_path(options[:tests_path], Dir.pwd)
-    Dir.glob(File.expand_path('**/*.rb', tests_path)) do |test_file|
+
+    test_files = test_files_in_path(Loris.arguments[:tests_path])
+
+    excluded_test_files = []
+    Loris.arguments[:exclude_paths].split(',').each do |exclude_path|
+      excluded_test_files << test_files_in_path(exclude_path)
+    end
+
+    (test_files - excluded_test_files).each do |test_file|
       require test_file
     end
 
     # Requires our monkeypatching later, to make sure it's not overwritten
     require 'loris/monkeypatching.rb'
+  end
+
+  private
+
+  def self.test_files_in_path(path)
+    if path
+      Dir.glob(File.expand_path('**/*.rb', File.expand_path(path, Dir.pwd)))
+    else
+      []
+    end
   end
 
 end
