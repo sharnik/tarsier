@@ -1,12 +1,12 @@
 module Loris
-  # Holds analyzer data from rcov analyzers for all code files.
+  # Analyzer data from rcov analyzers for all code files.
   accessor :data, {}
-  # Holds actual code lines of code that has been run.
+  # Actual code lines of code that has been run.
   accessor :code_lines, {}
   # Arguments with which the script is called
   accessor :arguments, {}
   # Files matching any of these will not appear in the output
-  accessor :silencers, [/gems/, /ruby/, /_test\.rb/,
+  accessor :silencers, [/gems/, /ruby/, /vendor/, /_test\.rb/,
     __FILE__, File.expand_path('monkeypatching.rb', File.dirname(__FILE__))]
 
   def self.mode
@@ -29,7 +29,7 @@ module Loris
       yield
     end
     analyzer.analyzed_files.each do |file|
-      next if Loris.silencers.index {|silencer| silencer === file}
+      next if Loris.silencers.any? {|silencer| silencer === file}
       Loris.data[file] ||= {}
       lines, marked_info, count_info = analyzer.data(file)
       Loris.code_lines[file] = lines
