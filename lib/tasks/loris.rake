@@ -11,6 +11,9 @@ namespace :loris do
       :exclude_paths => ENV['exclude_paths'] || ''
     }
     require 'loris'
+
+    puts 'Loading Loris, without extra test helpers.'
+
     Loris.run(options)
   end
 end
