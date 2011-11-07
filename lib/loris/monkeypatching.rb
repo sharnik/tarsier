@@ -46,3 +46,17 @@ if defined?(::Test::Unit)
   end
 end
 
+if defined?(::RSpec::Core::Example)
+  module ::RSpec::Core
+    class Example
+      def run
+        alias :run_without_analyzer :run
+        def run
+          Loris.test_suite_wrapper do
+            run_without_analyzer
+          end
+        end
+      end
+    end
+  end
+end
