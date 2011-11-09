@@ -9,7 +9,9 @@ module Loris
     # @param [Hash] options for output
     # @return nil
     def self.puke_out_report(options = {})
+      puts "Report, bitches."
       groups = test_case_groups(Loris.data)
+      # p groups
       groups.sort! {|a, b| b.keys.length <=> a.keys.length }
       grouped_lines = data_grouped(Loris.data, groups)
       groups.each_with_index do |group, index|

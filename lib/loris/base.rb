@@ -24,25 +24,43 @@ module Loris
   end
 
   def self.test_method_wrapper(sender)
-    # For RSpec examples we need :method_name
-    def sender.method_name
-      self.full_description
-    end unless sender.respond_to?( :method_name )
+    p sender.metadata
+    if sender.class == RSpec::Core::Example
+      analyzer = Rcov::CodeCoverageAnalyzer.new
+      analyzer.run_hooked do
+        yield
+      end
+      analyzer.analyzed_files.each do |file|
+        next if Loris.silencers.any? {|silencer| silencer === file}
+        Loris.data[file] ||= {}
+        lines, marked_info, count_info = analyzer.data(file)
+        Loris.code_lines[file] = lines
+        marked_info.each_with_index do |elem, index|
+          Loris.data[file][index] ||= {}
+          if elem
+            Loris.data[file][index][sender.location] ||= []
+            Loris.data[file][index][sender.location] << sender.full_description
+          end
+        end
+      end
 
-    analyzer = Rcov::CodeCoverageAnalyzer.new
-    analyzer.run_hooked do
-      yield
-    end
-    analyzer.analyzed_files.each do |file|
-      next if Loris.silencers.any? {|silencer| silencer === file}
-      Loris.data[file] ||= {}
-      lines, marked_info, count_info = analyzer.data(file)
-      Loris.code_lines[file] = lines
-      marked_info.each_with_index do |elem, index|
-        Loris.data[file][index] ||= {}
-        if elem
-          Loris.data[file][index][sender.class.to_s] ||= []
-          Loris.data[file][index][sender.class.to_s] << sender.method_name.to_sym
+    else
+      # Basically Test::Unit stuff
+      analyzer = Rcov::CodeCoverageAnalyzer.new
+      analyzer.run_hooked do
+        yield
+      end
+      analyzer.analyzed_files.each do |file|
+        next if Loris.silencers.any? {|silencer| silencer === file}
+        Loris.data[file] ||= {}
+        lines, marked_info, count_info = analyzer.data(file)
+        Loris.code_lines[file] = lines
+        marked_info.each_with_index do |elem, index|
+          Loris.data[file][index] ||= {}
+          if elem
+            Loris.data[file][index][sender.class.to_s] ||= []
+            Loris.data[file][index][sender.class.to_s] << sender.method_name.to_sym
+          end
         end
       end
     end
