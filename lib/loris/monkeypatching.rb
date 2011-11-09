@@ -1,3 +1,10 @@
+# Loads monkeypatching of different test example classes.
+# Currenty supports:
+#   * Test::Unit::TestCase
+#   * RSpec::Core::Example
+#   * ActiveSupport::Testing::SetupAndTeardown::ForClassicTestUnit
+#
+
 if defined?(ActiveSupport::Testing::SetupAndTeardown::ForClassicTestUnit)
   puts 'Loads ActiveSupport monkeypatching.'
   module ActiveSupport
@@ -16,7 +23,6 @@ if defined?(ActiveSupport::Testing::SetupAndTeardown::ForClassicTestUnit)
   end
 end
 
-# Loads Test::Unit monkeypatching to run the rcov analyzer
 if defined?(::Test::Unit)
   module Test::Unit
 
@@ -47,14 +53,13 @@ if defined?(::Test::Unit)
 end
 
 if defined?(::RSpec::Core::Example)
+  puts 'Loads RSpec::Core::Example monkeypatching.'
   module ::RSpec::Core
     class Example
-      def run
-        alias :run_without_analyzer :run
-        def run
-          Loris.test_suite_wrapper do
-            run_without_analyzer
-          end
+      alias :run_without_analyzer :run
+      def run(*args, &block)
+        Loris.test_method_wrapper(self) do
+          run_without_analyzer(*args, &block)
         end
       end
     end

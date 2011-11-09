@@ -24,6 +24,11 @@ module Loris
   end
 
   def self.test_method_wrapper(sender)
+    # For RSpec examples we need :method_name
+    def sender.method_name
+      self.full_description
+    end unless sender.respond_to?( :method_name )
+
     analyzer = Rcov::CodeCoverageAnalyzer.new
     analyzer.run_hooked do
       yield
@@ -54,12 +59,17 @@ module Loris
       excluded_test_files << test_files_in_path(exclude_path)
     end
 
+    test_files.flatten!
+    excluded_test_files.flatten!
+    
     (test_files - excluded_test_files).each do |test_file|
       require test_file
     end
 
     # Requires our monkeypatching later, to make sure it's not overwritten
     require 'loris/monkeypatching.rb'
+    
+    RSpec::Core::Runner.run []
   end
 
   private

@@ -8,11 +8,13 @@ namespace :loris do
       :tests_path => ENV['tests_path'] || 'spec',
       :file => ENV['file'],
       :line_number => ENV['line_number'],
-      :exclude_paths => ENV['exclude_paths'] || ''
+      :exclude_paths => ENV['exclude_paths'] || 'spec/support,spec/factories'
     }
     require 'loris'
 
-    puts 'Loading Loris, without extra test helpers.'
+    at_exit do
+      Loris::Report.puke_out_report
+    end
 
     Loris.run(options)
   end
