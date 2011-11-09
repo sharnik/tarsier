@@ -6,7 +6,7 @@ module Loris
   # Arguments with which the script is called
   accessor :arguments, {}
   # Files matching any of these will not appear in the output
-  accessor :silencers, [/gems/, /ruby/, /vendor/, /_test\.rb/,
+  accessor :silencers, [/gems/, /ruby/, /vendor/, /\/test\//,
     __FILE__, File.expand_path('monkeypatching.rb', File.dirname(__FILE__))]
 
   def self.mode
