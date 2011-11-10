@@ -10,10 +10,10 @@ namespace :loris do
       Loris::Report.puke_out_report
     end
 
-    options = Loris.filter_attributes(ENV)
+    Loris.set_attributes(ENV)
 
     puts 'Loading Loris, without extra test helpers.'
-    Loris.run(options)
+    Loris.run
   end
 end
 

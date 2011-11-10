@@ -5,12 +5,14 @@ module Loris
   accessor :code_lines, {}
   # Arguments with which the script is called
   accessor :arguments, {}
+  # Default values of arguments
+  accessor :defaults, {}
   # Files matching any of these will not appear in the output
-  accessor :silencers, [/gems/, /ruby/, /vendor/, /\/test\//,
+  accessor :silencers, [/\/gems\//, /\/ruby\//, /\/vendor\//, /\/test\//, /\/spec\//,
     __FILE__, File.expand_path('monkeypatching.rb', File.dirname(__FILE__))]
 
   def self.mode
-    if arguments[:file] and arguments[:line_number]
+    if arguments[:file] && arguments[:line_number]
       :line
     else
       :suite
@@ -65,7 +67,7 @@ module Loris
     end
   end
 
-  def self.filter_attributes(env)
+  def self.set_attributes(env)
     defaults = {
       :tests_path => 'spec',
       :file => nil,
@@ -76,15 +78,13 @@ module Loris
     }
     keys = defaults.keys
     options = env.reject {|key, _| !keys.include?(key.to_sym) }
-    options = Hash[options.map{|k,v| [k.to_sym, v]}]
-    options[:add_silencers] = attribute_to_regexp_array(options[:add_silencers])
-    defaults.merge options
+    Loris.arguments = Hash[options.map{|k,v| [k.to_sym, v]}]
+    filter_attribute(:add_silencers, :attribute_to_regexp_array)
+    Loris.arguments = defaults.merge Loris.arguments
   end
 
-  def self.run(options)
+  def self.run
     # Loads the test suite
-    Loris.arguments = options
-
     test_files = test_files_in_path(Loris.arguments[:tests_path])
 
     excluded_test_files = []
@@ -108,13 +108,17 @@ module Loris
   end
 
   private
-
     def self.test_files_in_path(path)
       if path
         Dir.glob(File.expand_path('**/*.rb', File.expand_path(path, Dir.pwd)))
       else
         []
       end
+    end
+
+    def self.filter_attribute(attribute, method)
+      return unless Loris.arguments[attribute]
+      Loris.arguments[attribute] = send(method, attribute)
     end
 
     def self.attribute_to_regexp_array(attribute)
@@ -124,6 +128,5 @@ module Loris
         text[/^\/(.*)\/$/] ? /#{$1}/ : text
       end
     end
-
 
 end
