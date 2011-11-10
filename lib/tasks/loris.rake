@@ -6,13 +6,8 @@ namespace :loris do
   task :run do
     require 'loris'
 
-    at_exit do
-      Loris::Report.puke_out_report
-    end
-
     Loris.set_attributes(ENV)
-
-    puts 'Loading Loris, without extra test helpers.'
+    puts 'Loading Loris.'
     Loris.run
   end
 end
