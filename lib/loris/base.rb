@@ -5,11 +5,10 @@ module Loris
   accessor :code_lines, {}
   # Arguments with which the script is called
   accessor :arguments, {}
-  # Default values of arguments
-  accessor :defaults, {}
   # Files matching any of these will not appear in the output
   accessor :silencers, [/\/gems\//, /\/ruby\//, /\/vendor\//, /\/test\//, /\/spec\//,
     __FILE__, File.expand_path('monkeypatching.rb', File.dirname(__FILE__))]
+  accessor :excluded_paths, ['spec/support', 'spec/factories']
 
   def self.mode
     if arguments[:file] && arguments[:line_number]
@@ -67,12 +66,16 @@ module Loris
     end
   end
 
+  # Parses command line options, merges them with defaults and sets as Loris arguments.
+  #
+  # @param [Hash] env user options
+  # 
   def self.set_attributes(env)
     defaults = {
-      :tests_path => 'spec',
+      :tests_path => 'spec,test',
       :file => nil,
       :line_number => nil,
-      :exclude_paths => 'spec/support,spec/factories',
+      :add_excluded_paths => [],
       :output => nil,
       :add_silencers => []
     }
@@ -80,31 +83,43 @@ module Loris
     options = env.reject {|key, _| !keys.include?(key.to_sym) }
     Loris.arguments = Hash[options.map{|k,v| [k.to_sym, v]}]
     filter_attribute(:add_silencers, :attribute_to_regexp_array)
+    filter_attribute(:add_excluded_paths, :split_attribute_to_array)
+
     Loris.arguments = defaults.merge Loris.arguments
+
+    Loris.silencers += Loris.arguments[:add_silencers]
+    Loris.excluded_paths += Loris.arguments[:add_excluded_paths]
   end
 
+  # Main method to run Loris: loads tests and runs them.
+  #
   def self.run
-    # Loads the test suite
-    test_files = test_files_in_path(Loris.arguments[:tests_path])
-
-    excluded_test_files = []
-    Loris.arguments[:exclude_paths].split(',').each do |exclude_path|
-      excluded_test_files << test_files_in_path(exclude_path)
+    # Find test files to load
+    test_files = Loris.arguments[:tests_path].split(',').map do |include_path|
+      test_files_in_path(include_path)
     end
-
     test_files.flatten!
-    excluded_test_files.flatten!
-    
-    Loris.silencers += Loris.arguments[:add_silencers]
 
-    (test_files - excluded_test_files).each do |test_file|
-      require test_file
+    # Find files to exclude from loading
+    excluded_test_files = Loris.excluded_paths.map do |exclude_path|
+      test_files_in_path(exclude_path)
     end
+    excluded_test_files.flatten!    
 
-    # Requires our monkeypatching later, to make sure it's not overwritten
+    # Load test files
+    (test_files - excluded_test_files).each { |file| require file }
+
+    # Requires our monkeypatching at the end, to make sure it's not overwritten
     require 'loris/monkeypatching.rb'
     
-    RSpec::Core::Runner.run []
+    if defined? RSpec::Core::Runner
+      # Registers a hook to display the Report
+      at_exit do
+        Loris::Report.puke_out_report
+      end
+      # Runs loaded RSpec suite
+      RSpec::Core::Runner.run( [] )
+    end
   end
 
   private
@@ -122,11 +137,15 @@ module Loris
     end
 
     def self.attribute_to_regexp_array(attribute)
-      return [] if attribute.nil?
-      array = attribute.split(',')
+      array = split_attribute_to_array(attribute)
       array.map! do |text|
         text[/^\/(.*)\/$/] ? /#{$1}/ : text
       end
+    end
+
+    def self.split_attribute_to_array(attribute)
+      return [] if attribute.nil?
+      attribute.split(',')
     end
 
 end
