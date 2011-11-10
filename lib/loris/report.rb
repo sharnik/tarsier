@@ -8,12 +8,12 @@ module Loris
     #
     # @param [Hash] options for output
     # @return nil
-    def self.puke_out_report(options = {})
-      puts "Report, bitches."
+    def self.puke_out_report
       groups = test_case_groups(Loris.data)
       # p groups
       groups.sort! {|a, b| b.keys.length <=> a.keys.length }
       grouped_lines = data_grouped(Loris.data, groups)
+      output = ""
       groups.each_with_index do |group, index|
         if Loris.mode == :line
           header = "\nLine #{Loris.arguments[:line_number]} in file #{Loris.arguments[:file]}"
@@ -22,15 +22,22 @@ module Loris
           header = "\nThe following files has been touched by #{group.length} different test cases: "
         end
         header << group.map { |suite, cases| "#{suite} (#{cases.join(', ')})" }.join(', ')
-        STDOUT.puts header
+        output << "\n" + header
         if Loris.mode != :line
           grouped_lines[index].each do |file, lines|
-            STDOUT.puts file
+            output << "\n" + file + "\n"
             lines.sort.each do |line|
-              STDOUT.puts "#{line + 1}: #{Loris.code_lines[file][line]}"
+              output << "#{line + 1}: #{Loris.code_lines[file][line]}"
             end
           end
         end
+      end
+      if Loris.arguments[:output]
+        File.open(Loris.arguments[:output], "w") do |f|
+          f.write output
+        end
+      else
+        STDOUT.puts output
       end
     end
 

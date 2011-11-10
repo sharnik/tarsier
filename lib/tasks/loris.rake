@@ -8,7 +8,8 @@ namespace :loris do
       :tests_path => ENV['tests_path'] || 'spec',
       :file => ENV['file'],
       :line_number => ENV['line_number'],
-      :exclude_paths => ENV['exclude_paths'] || 'spec/support,spec/factories'
+      :exclude_paths => ENV['exclude_paths'] || 'spec/support,spec/factories',
+      :output => ENV['output']
     }
     require 'loris'
 
