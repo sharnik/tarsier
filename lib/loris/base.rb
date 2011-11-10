@@ -25,7 +25,7 @@ module Loris
   end
 
   def self.test_method_wrapper(sender)
-    if sender.class == RSpec::Core::Example
+    if defined?(RSpec) && sender.class == RSpec::Core::Example
       analyzer = Rcov::CodeCoverageAnalyzer.new
       analyzer.run_hooked do
         yield
@@ -38,8 +38,8 @@ module Loris
         marked_info.each_with_index do |elem, index|
           Loris.data[file][index] ||= {}
           if elem
-            Loris.data[file][index][sender.location] ||= []
-            Loris.data[file][index][sender.location] << sender.full_description
+            Loris.data[file][index][sender.file_path] ||= []
+            Loris.data[file][index][sender.file_path] << "#{sender.full_description} - #{sender.location}"
           end
         end
       end
