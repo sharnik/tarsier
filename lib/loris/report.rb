@@ -10,7 +10,6 @@ module Loris
     # @return nil
     def self.puke_out_report
       groups = test_case_groups(Loris.data)
-      # p groups
       groups.sort! {|a, b| b.keys.length <=> a.keys.length }
       grouped_lines = data_grouped(Loris.data, groups)
       output = ""

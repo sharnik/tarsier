@@ -4,19 +4,15 @@ namespace :loris do
 
   desc "Tests the coverage with Loris"
   task :run do
-    options = {
-      :tests_path => ENV['tests_path'] || 'spec',
-      :file => ENV['file'],
-      :line_number => ENV['line_number'],
-      :exclude_paths => ENV['exclude_paths'] || 'spec/support,spec/factories',
-      :output => ENV['output']
-    }
     require 'loris'
 
     at_exit do
       Loris::Report.puke_out_report
     end
 
+    options = Loris.filter_attributes(ENV)
+
+    puts 'Loading Loris, without extra test helpers.'
     Loris.run(options)
   end
 end

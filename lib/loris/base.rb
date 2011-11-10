@@ -24,7 +24,6 @@ module Loris
   end
 
   def self.test_method_wrapper(sender)
-    p sender.metadata
     if sender.class == RSpec::Core::Example
       analyzer = Rcov::CodeCoverageAnalyzer.new
       analyzer.run_hooked do
@@ -66,6 +65,22 @@ module Loris
     end
   end
 
+  def self.filter_attributes(env)
+    defaults = {
+      :tests_path => 'spec',
+      :file => nil,
+      :line_number => nil,
+      :exclude_paths => 'spec/support,spec/factories',
+      :output => nil,
+      :add_silencers => []
+    }
+    keys = defaults.keys
+    options = env.reject {|key, _| !keys.include?(key.to_sym) }
+    options = Hash[options.map{|k,v| [k.to_sym, v]}]
+    options[:add_silencers] = attribute_to_regexp_array(options[:add_silencers])
+    defaults.merge options
+  end
+
   def self.run(options)
     # Loads the test suite
     Loris.arguments = options
@@ -80,6 +95,8 @@ module Loris
     test_files.flatten!
     excluded_test_files.flatten!
     
+    Loris.silencers += Loris.arguments[:add_silencers]
+
     (test_files - excluded_test_files).each do |test_file|
       require test_file
     end
@@ -92,12 +109,21 @@ module Loris
 
   private
 
-  def self.test_files_in_path(path)
-    if path
-      Dir.glob(File.expand_path('**/*.rb', File.expand_path(path, Dir.pwd)))
-    else
-      []
+    def self.test_files_in_path(path)
+      if path
+        Dir.glob(File.expand_path('**/*.rb', File.expand_path(path, Dir.pwd)))
+      else
+        []
+      end
     end
-  end
+
+    def self.attribute_to_regexp_array(attribute)
+      return [] if attribute.nil?
+      array = attribute.split(',')
+      array.map! do |text|
+        text[/^\/(.*)\/$/] ? /#{$1}/ : text
+      end
+    end
+
 
 end
