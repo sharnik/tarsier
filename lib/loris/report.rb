@@ -1,5 +1,4 @@
 module Loris
-
   # Takes care of presenting the analysis results.
   class Report
     attr_accessor :attributes
@@ -12,35 +11,58 @@ module Loris
       groups = test_case_groups(Loris.data)
       groups.sort! {|a, b| b.keys.length <=> a.keys.length }
       grouped_lines = data_grouped(Loris.data, groups)
-      output = ""
+      result = {:collection => [], :mode => Loris.mode}
       groups.each_with_index do |group, index|
+        chunk = {}
         if Loris.mode == :line
-          header = "\nLine #{Loris.arguments[:line_number]} in file #{Loris.arguments[:file]}"
-          header << " has been touched by #{group.length} test case(s): "
+          chunk[:line] = Loris.arguments[:line_number]
+          chunk[:file] = Loris.arguments[:file]
         else
-          header = "\nThe following files has been touched by #{group.length} different test cases: "
+          chunk[:files] = grouped_lines[index].map do |file, lines|
+            { :name => file,
+              :code => lines.sort.map {|line| "#{line + 1}: #{Loris.code_lines[file][line]}"}
+            }
+          end
         end
-        header << group.map { |suite, cases| "#{suite} (#{cases.join(', ')})" }.join(', ')
-        output << "\n" + header
-        if Loris.mode != :line
-          grouped_lines[index].each do |file, lines|
-            output << "\n" + file + "\n"
-            lines.sort.each do |line|
-              output << "#{line + 1}: #{Loris.code_lines[file][line]}"
+        chunk[:test_groups] = group
+        result[:collection] << chunk
+      end
+      directory = Loris.arguments[:output]
+      if directory
+        Dir::mkdir(directory) unless FileTest::directory?(directory)
+        File.open("#{directory}/index.html", "w") do |f|
+          f.write report_to_html(result)
+        end
+      else
+        output = ""
+        result[:collection].each_with_index do |chunk, index|
+          if result[:mode] == :line
+            header = "\nLine #{chunk[:line]} in file #{chunk[:file]}"
+            header << " has been touched by #{chunk[:test_groups].length} test case(s): "
+          else
+            header = "\nThe following files has been touched by #{chunk[:test_groups].length} different test cases: "
+          end
+          header << chunk[:test_groups].map { |suite, cases| "#{suite} (#{cases.join(', ')})" }.join(', ')
+          output << "\n" + header
+          if result[:mode] != :line
+            chunk[:files].each do |file_data|
+              output << "\n" + file_data[:name] + "\n"
+              output << file_data[:code].join
             end
           end
         end
-      end
-      if Loris.arguments[:output]
-        File.open(Loris.arguments[:output], "w") do |f|
-          f.write output
-        end
-      else
         STDOUT.puts output
       end
     end
 
     private
+      def report_to_html(data)
+        require "erb"
+        template_file = File.read('template/index.html.erb')
+        template = ERB.new(template_file, 0, "%<>")
+        output = template.result(data)
+      end
+
       def self.condition(test_cases, file, line_number)
         if Loris.mode == :line
           file == File.expand_path(Loris.arguments[:file]) && (line_number + 1) == Loris.arguments[:line_number].to_i
