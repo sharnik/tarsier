@@ -25,42 +25,19 @@ module Loris
   end
 
   def self.test_method_wrapper(sender)
-    if defined?(RSpec) && sender.class == RSpec::Core::Example
-      analyzer = Rcov::CodeCoverageAnalyzer.new
-      analyzer.run_hooked do
-        yield
-      end
-      analyzer.analyzed_files.each do |file|
-        next if Loris.silencers.any? {|silencer| silencer === file}
-        Loris.data[file] ||= {}
-        lines, marked_info, count_info = analyzer.data(file)
-        Loris.code_lines[file] = lines
-        marked_info.each_with_index do |elem, index|
-          Loris.data[file][index] ||= {}
-          if elem
-            Loris.data[file][index][sender.file_path] ||= []
-            Loris.data[file][index][sender.file_path] << "#{sender.full_description} - #{sender.location}"
-          end
-        end
-      end
-
-    else
-      # Basically Test::Unit stuff
-      analyzer = Rcov::CodeCoverageAnalyzer.new
-      analyzer.run_hooked do
-        yield
-      end
-      analyzer.analyzed_files.each do |file|
-        next if Loris.silencers.any? {|silencer| silencer === file}
-        Loris.data[file] ||= {}
-        lines, marked_info, count_info = analyzer.data(file)
-        Loris.code_lines[file] = lines
-        marked_info.each_with_index do |elem, index|
-          Loris.data[file][index] ||= {}
-          if elem
-            Loris.data[file][index][sender.class.to_s] ||= []
-            Loris.data[file][index][sender.class.to_s] << sender.method_name.to_sym
-          end
+    analyzer = Rcov::CodeCoverageAnalyzer.new
+    analyzer.run_hooked do
+      yield
+    end
+    analyzer.analyzed_files.each do |file|
+      next if Loris.silencers.any? {|silencer| silencer === file}
+      Loris.data[file] ||= {}
+      lines, marked_info, count_info = analyzer.data(file)
+      Loris.code_lines[file] = lines
+      marked_info.each_with_index do |elem, index|
+        Loris.data[file][index] ||= {}
+        if elem
+          alter_data(file, index, sender) if elem
         end
       end
     end
@@ -69,7 +46,7 @@ module Loris
   # Parses command line options, merges them with defaults and sets as Loris arguments.
   #
   # @param [Hash] env user options
-  # 
+  #
   def self.set_attributes(env)
     defaults = {
       :tests_path => 'spec,test',
@@ -104,14 +81,14 @@ module Loris
     excluded_test_files = Loris.excluded_paths.map do |exclude_path|
       test_files_in_path(exclude_path)
     end
-    excluded_test_files.flatten!    
+    excluded_test_files.flatten!
 
     # Load test files
     (test_files - excluded_test_files).each { |file| require file }
 
     # Requires our monkeypatching at the end, to make sure it's not overwritten
     require 'loris/monkeypatching.rb'
-    
+
     if defined? RSpec::Core::Runner
       # Registers a hook to display the Report
       at_exit do
@@ -123,6 +100,18 @@ module Loris
   end
 
   private
+    def self.alter_data(source_file, index, sender)
+      if defined?(RSpec) && sender.class == RSpec::Core::Example
+        test_group_name = sender.file_path
+        test_name = "#{sender.full_description} - #{sender.location}"
+      else
+        test_group_name = sender.class.to_s
+        test_name = sender.method_name.to_sym
+      end
+      Loris.data[source_file][index][test_group_name] ||= []
+      Loris.data[source_file][index][test_group_name] << test_name
+    end
+
     def self.test_files_in_path(path)
       if path
         Dir.glob(File.expand_path('**/*.rb', File.expand_path(path, Dir.pwd)))
