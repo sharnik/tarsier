@@ -9,6 +9,7 @@ module Loris
   accessor :silencers, [/\/gems\//, /\/ruby\//, /\/vendor\//, /\/test\//, /\/spec\//,
     __FILE__, File.expand_path('monkeypatching.rb', File.dirname(__FILE__))]
   accessor :excluded_paths, ['spec/support', 'spec/factories']
+  accessor :result
 
   def self.mode
     if arguments[:file] && arguments[:line_number]
@@ -66,6 +67,8 @@ module Loris
 
     Loris.silencers += Loris.arguments[:add_silencers]
     Loris.excluded_paths += Loris.arguments[:add_excluded_paths]
+
+    Loris.result = Loris::Result.new
   end
 
   # Main method to run Loris: loads tests and runs them.

@@ -31,7 +31,7 @@ module Loris
       if directory
         Dir::mkdir(directory) unless FileTest::directory?(directory)
         File.open("#{directory}/index.html", "w") do |f|
-          f.write report_to_html(result)
+          f.write report_to_html
         end
       else
         output = ""
@@ -56,11 +56,11 @@ module Loris
     end
 
     private
-      def report_to_html(data)
+      def self.report_to_html
         require "erb"
-        template_file = File.read('template/index.html.erb')
+        template_file = File.open(File.expand_path("template/index.html.erb", File.dirname(__FILE__)), "r:UTF-8')
         template = ERB.new(template_file, 0, "%<>")
-        output = template.result(data)
+        output = template.result( Loris.result.get_binding )
       end
 
       def self.condition(test_cases, file, line_number)
