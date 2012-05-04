@@ -35,6 +35,7 @@ module Loris
         end
       else
         output = ""
+        puts result.inspect
         result[:collection].each_with_index do |chunk, index|
           if result[:mode] == :line
             header = "\nLine #{chunk[:line]} in file #{chunk[:file]}"
@@ -58,7 +59,7 @@ module Loris
     private
       def self.report_to_html
         require "erb"
-        template_file = File.open(File.expand_path("template/index.html.erb", File.dirname(__FILE__)), "r:UTF-8')
+        template_file = File.open(File.expand_path("template/index.html.erb", File.dirname(__FILE__)), 'r:UTF-8')
         template = ERB.new(template_file, 0, "%<>")
         output = template.result( Loris.result.get_binding )
       end

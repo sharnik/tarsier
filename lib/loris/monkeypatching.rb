@@ -26,6 +26,10 @@ end
 if defined?(::Test::Unit)
   module Test::Unit
 
+    class Test::Unit::Runner
+      @@stop_auto_run = true
+    end
+
     if defined?(::Test::Unit::AutoRunner)
       puts 'Loads Test::Unit::AutoRunner monkeypatching.'
       class AutoRunner
@@ -37,7 +41,7 @@ if defined?(::Test::Unit)
         end
       end
     end
-    
+
     if defined?(::Test::Unit::TestCase)
       puts 'Loads Test::Unit::TestCase monkeypatching.'
       class TestCase

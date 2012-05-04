@@ -18,7 +18,7 @@ Gem::Specification.new do |s|
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   s.require_paths = ["lib"]
 
-  s.add_dependency('rcov', '>= 0.9.8')
+  s.add_dependency('rcov', '0.9.11')
 
   s.add_development_dependency('mocha', '>= 0.9.12')
   s.add_development_dependency('aruba', '>= 0.4.3')

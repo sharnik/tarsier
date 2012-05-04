@@ -1,1 +1,1 @@
-require 'lib/tasks/loris'
+import 'lib/tasks/loris.rake'

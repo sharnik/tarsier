@@ -74,13 +74,11 @@ module Loris
   # Main method to run Loris: loads tests and runs them.
   #
   def self.run
-    # Find test files to load
     test_files = Loris.arguments[:tests_path].split(',').map do |include_path|
       test_files_in_path(include_path)
     end
     test_files.flatten!
 
-    # Find files to exclude from loading
     excluded_test_files = Loris.excluded_paths.map do |exclude_path|
       test_files_in_path(exclude_path)
     end
@@ -91,6 +89,11 @@ module Loris
 
     # Requires our monkeypatching at the end, to make sure it's not overwritten
     require 'loris/monkeypatching.rb'
+
+    if defined? Test::Unit::Runner
+      Test::Unit::Runner.new.run()
+      Loris::Report.puke_out_report
+    end
 
     if defined? RSpec::Core::Runner
       # Registers a hook to display the Report
@@ -109,7 +112,7 @@ module Loris
         test_name = "#{sender.full_description} - #{sender.location}"
       else
         test_group_name = sender.class.to_s
-        test_name = sender.method_name.to_sym
+        test_name = sender.instance_variable_get(:@__name__).to_sym
       end
       Loris.data[source_file][index][test_group_name] ||= []
       Loris.data[source_file][index][test_group_name] << test_name
