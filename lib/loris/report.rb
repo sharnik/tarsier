@@ -34,8 +34,20 @@ module Loris
           f.write report_to_html
         end
       else
+        report_to_stdout(result)
+      end
+    end
+
+    private
+      def self.report_to_html
+        require "erb"
+        template_file = File.open(File.expand_path("template/index.html.erb", File.dirname(__FILE__)), 'r:UTF-8')
+        template = ERB.new(template_file, 0, "%<>")
+        output = template.result( Loris.result.get_binding )
+      end
+
+      def self.report_to_stdout(result)
         output = ""
-        puts result.inspect
         result[:collection].each_with_index do |chunk, index|
           if result[:mode] == :line
             header = "\nLine #{chunk[:line]} in file #{chunk[:file]}"
@@ -53,15 +65,6 @@ module Loris
           end
         end
         STDOUT.puts output
-      end
-    end
-
-    private
-      def self.report_to_html
-        require "erb"
-        template_file = File.open(File.expand_path("template/index.html.erb", File.dirname(__FILE__)), 'r:UTF-8')
-        template = ERB.new(template_file, 0, "%<>")
-        output = template.result( Loris.result.get_binding )
       end
 
       def self.condition(test_cases, file, line_number)
