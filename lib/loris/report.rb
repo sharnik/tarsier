@@ -29,21 +29,26 @@ module Loris
       end
       directory = Loris.arguments[:output]
       if directory
-        Dir::mkdir(directory) unless FileTest::directory?(directory)
-        File.open("#{directory}/index.html", "w") do |f|
-          f.write report_to_html
-        end
+        report_to_html(directory)
       else
         report_to_stdout(result)
       end
     end
 
     private
-      def self.report_to_html
-        require "erb"
-        template_file = File.open(File.expand_path("template/index.html.erb", File.dirname(__FILE__)), 'r:UTF-8')
-        template = ERB.new(template_file, 0, "%<>")
-        output = template.result( Loris.result.get_binding )
+      def self.report_to_html(directory)
+        Dir::mkdir(directory) unless FileTest::directory?(directory)
+        File.open("#{directory}/index.html", "w") do |f|
+          template_string = File.open(
+            File.expand_path("../template/index.html.erb", File.dirname(__FILE__)), 'r:UTF-8'
+          ).read
+          template = ERB.new(template_string, 0, "%<>")
+          f.write template.result( Loris.result.get_binding )
+        end
+
+        %w(css js).each do |dir|
+          FileUtils.cp_r "lib/template/#{dir}", directory
+        end
       end
 
       def self.report_to_stdout(result)

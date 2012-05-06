@@ -1,4 +1,6 @@
 require 'rcov'
+require 'erb'
+
 require 'loris/utils.rb'
 require 'loris/result.rb'
 require 'loris/base.rb'
