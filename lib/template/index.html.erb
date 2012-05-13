@@ -13,110 +13,35 @@
   <body>
     <div class='container'>
       <h1>Loris results</h1>
-      <h1><%= @dupa %></h1>
       <p> These are results of the coverage tests done by the Loris tool:</p>
 
       <div>
-        <h2>Touched by 13 test cases:</h2>
-        <ul class='tabs'>
-          <li class="active"><a href="#code-1">Code</a></li>
-          <li><a href="#tests-1">Tests</a></li>
-        </ul>
+        <% @data[:collection].each do |result| %>
+          <h2>Touched by <%= result[:test_groups].size %> test cases:</h2>
+          <ul class='tabs'>
+            <li class="active"><a href="#code-1">Code</a></li>
+            <li><a href="#tests-1">Tests</a></li>
+          </ul>
 
-        <div class='tab-content'>
-          <div class='active' id='code-1'>
-            <pre class='prettyprint'>
-100: # Intended for development purposes only.
-101:   cookies[:xing] = SIGN_IN_WITH_COOKIE
-102:   redirect_to 'http://edge.xing.com' unless current_user
-103: end
-            </pre>
+          <div class='tab-content'>
+            <div class='active' id='code-1'>
+              <% result[:files].each do |file| %>
+                <h3><%= file[:name] %></h3>
+                <pre class='prettyprint'><%= file[:code].join("") %></pre>
+              <% end %>
+            </div>
+            <div id='tests-1'>
+              <% result[:test_groups].each do |group, tests| %>
+                <h3><%= group %></h3>
+                <ul>
+                  <% tests.each do |test| %>
+                    <li><%= test %></li>
+                  <% end %>
+                </ul>
+              <% end %>
+            </div>
           </div>
-          <div id='tests-1'>
-            <h3>/Users/sharnik/projects/xing/cra/spec/controllers/candidates_spec.rb</h3>
-            <ul>
-              <li>
-                CandidatesController not logged in should not allow access to create
-                <strong>line 14</strong>
-              </li>
-              <li>
-                CandidatesController not logged in should not allow access to create
-                <strong>line 14</strong>
-              </li>
-              <li>
-                CandidatesController not logged in should not allow access to create
-                <strong>line 14</strong>
-              </li>
-            </ul>
-            <h3>/Users/sharnik/projects/xing/cra/spec/controllers/candidates_spec.rb</h3>
-            <ul>
-              <li>
-                CandidatesController not logged in should not allow access to create
-                <strong>line 14</strong>
-              </li>
-              <li>
-                CandidatesController not logged in should not allow access to create
-                <strong>line 14</strong>
-              </li>
-              <li>
-                CandidatesController not logged in should not allow access to create
-                <strong>line 14</strong>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-
-        <h2>Touched by 13 test cases:</h2>
-        <ul class='tabs'>
-          <li class="active"><a href="#code-2">Code</a></li>
-          <li><a href="#tests-2">Tests</a></li>
-        </ul>
-
-        <div class='tab-content'>
-          <div class='active' id='code-2'>
-            <pre class='prettyprint'>
-# Intended for development purposes only.
-  cookies[:xing] = SIGN_IN_WITH_COOKIE
-  redirect_to 'http://edge.xing.com' unless current_user
-end
-            </pre>
-          </div>
-          <div id='tests-2'>
-            <h3>/Users/sharnik/projects/xing/cra/spec/controllers/candidates_spec.rb</h3>
-            <ul>
-              <li>
-                CandidatesController not logged in should not allow access to create
-                <strong>line 14</strong>
-              </li>
-              <li>
-                CandidatesController not logged in should not allow access to create
-                <strong>line 14</strong>
-              </li>
-              <li>
-                CandidatesController not logged in should not allow access to create
-                <strong>line 14</strong>
-              </li>
-            </ul>
-            <h3>/Users/sharnik/projects/xing/cra/spec/controllers/candidates_spec.rb</h3>
-            <ul>
-              <li>
-                CandidatesController not logged in should not allow access to create
-                <strong>line 14</strong>
-              </li>
-              <li>
-                CandidatesController not logged in should not allow access to create
-                <strong>line 14</strong>
-              </li>
-              <li>
-                CandidatesController not logged in should not allow access to create
-                <strong>line 14</strong>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-
+        <% end %>
 
       </div>
     </div>

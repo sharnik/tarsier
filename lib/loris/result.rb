@@ -1,9 +1,8 @@
 module Loris
   class Result
-    attr_accessor :dupa
+    attr_accessor :data
 
     def initialize
-      @dupa = 'DUPA!'
     end
 
     def get_binding

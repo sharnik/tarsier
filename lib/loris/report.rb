@@ -27,11 +27,12 @@ module Loris
         chunk[:test_groups] = group
         result[:collection] << chunk
       end
+      Loris.result.data = result
       directory = Loris.arguments[:output]
       if directory
         report_to_html(directory)
       else
-        report_to_stdout(result)
+        report_to_stdout
       end
     end
 
@@ -43,7 +44,7 @@ module Loris
             File.expand_path("../template/index.html.erb", File.dirname(__FILE__)), 'r:UTF-8'
           ).read
           template = ERB.new(template_string, 0, "%<>")
-          f.write template.result( Loris.result.get_binding )
+          f.write template.result(Loris.result.get_binding)
         end
 
         %w(css js).each do |dir|
@@ -51,7 +52,8 @@ module Loris
         end
       end
 
-      def self.report_to_stdout(result)
+      def self.report_to_stdout
+        result = Loris.result.data
         output = ""
         result[:collection].each_with_index do |chunk, index|
           if result[:mode] == :line
