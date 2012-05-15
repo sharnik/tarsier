@@ -1,4 +1,4 @@
-module Loris
+module Tarsier
   private
     def self.accessor(name, value = nil)
       module_eval "@@#{name} = #{value.inspect};

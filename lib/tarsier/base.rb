@@ -1,4 +1,4 @@
-module Loris
+module Tarsier
   # Analyzer data from rcov analyzers for all code files.
   accessor :data, {}
   # Actual code lines of code that has been run.
@@ -21,7 +21,7 @@ module Loris
 
   def self.test_suite_wrapper
     result = yield
-    Loris::Report.puke_out_report
+    Report.puke_out_report
     result
   end
 
@@ -31,12 +31,12 @@ module Loris
       yield
     end
     analyzer.analyzed_files.each do |file|
-      next if Loris.silencers.any? {|silencer| silencer === file}
-      Loris.data[file] ||= {}
+      next if Tarsier.silencers.any? {|silencer| silencer === file}
+      Tarsier.data[file] ||= {}
       lines, marked_info, count_info = analyzer.data(file)
-      Loris.code_lines[file] = lines
+      Tarsier.code_lines[file] = lines
       marked_info.each_with_index do |elem, index|
-        Loris.data[file][index] ||= {}
+        Tarsier.data[file][index] ||= {}
         if elem
           alter_data(file, index, sender) if elem
         end
@@ -44,7 +44,7 @@ module Loris
     end
   end
 
-  # Parses command line options, merges them with defaults and sets as Loris arguments.
+  # Parses command line options, merges them with defaults and sets as Tarsier arguments.
   #
   # @param [Hash] env user options
   #
@@ -59,27 +59,27 @@ module Loris
     }
     keys = defaults.keys
     options = env.reject {|key, _| !keys.include?(key.to_sym) }
-    Loris.arguments = Hash[options.map{|k,v| [k.to_sym, v]}]
+    Tarsier.arguments = Hash[options.map{|k,v| [k.to_sym, v]}]
     filter_attribute(:add_silencers, :attribute_to_regexp_array)
     filter_attribute(:add_excluded_paths, :split_attribute_to_array)
 
-    Loris.arguments = defaults.merge Loris.arguments
+    Tarsier.arguments = defaults.merge Tarsier.arguments
 
-    Loris.silencers += Loris.arguments[:add_silencers]
-    Loris.excluded_paths += Loris.arguments[:add_excluded_paths]
+    Tarsier.silencers += Tarsier.arguments[:add_silencers]
+    Tarsier.excluded_paths += Tarsier.arguments[:add_excluded_paths]
 
-    Loris.result = Loris::Result.new
+    Tarsier.result = Result.new
   end
 
-  # Main method to run Loris: loads tests and runs them.
+  # Main method to run Tarsier: loads tests and runs them.
   #
   def self.run
-    test_files = Loris.arguments[:tests_path].split(',').map do |include_path|
+    test_files = Tarsier.arguments[:tests_path].split(',').map do |include_path|
       test_files_in_path(include_path)
     end
     test_files.flatten!
 
-    excluded_test_files = Loris.excluded_paths.map do |exclude_path|
+    excluded_test_files = Tarsier.excluded_paths.map do |exclude_path|
       test_files_in_path(exclude_path)
     end
     excluded_test_files.flatten!
@@ -88,17 +88,17 @@ module Loris
     (test_files - excluded_test_files).each { |file| require file }
 
     # Requires our monkeypatching at the end, to make sure it's not overwritten
-    require 'loris/monkeypatching.rb'
+    require 'tarsier/monkeypatching.rb'
 
     if defined? Test::Unit::Runner
       Test::Unit::Runner.new.run()
-      Loris::Report.puke_out_report
+      Report.puke_out_report
     end
 
     if defined? RSpec::Core::Runner
       # Registers a hook to display the Report
       at_exit do
-        Loris::Report.puke_out_report
+        Report.puke_out_report
       end
       # Runs loaded RSpec suite
       RSpec::Core::Runner.run( [] )
@@ -114,8 +114,8 @@ module Loris
         test_group_name = sender.class.to_s
         test_name = sender.instance_variable_get(:@__name__).to_sym
       end
-      Loris.data[source_file][index][test_group_name] ||= []
-      Loris.data[source_file][index][test_group_name] << test_name
+      Tarsier.data[source_file][index][test_group_name] ||= []
+      Tarsier.data[source_file][index][test_group_name] << test_name
     end
 
     def self.test_files_in_path(path)
@@ -127,8 +127,8 @@ module Loris
     end
 
     def self.filter_attribute(attribute, method)
-      return unless Loris.arguments[attribute]
-      Loris.arguments[attribute] = send(method, attribute)
+      return unless Tarsier.arguments[attribute]
+      Tarsier.arguments[attribute] = send(method, attribute)
     end
 
     def self.attribute_to_regexp_array(attribute)

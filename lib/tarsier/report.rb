@@ -1,4 +1,4 @@
-module Loris
+module Tarsier
   # Takes care of presenting the analysis results.
   class Report
     attr_accessor :attributes
@@ -8,27 +8,27 @@ module Loris
     # @param [Hash] options for output
     # @return nil
     def self.puke_out_report
-      groups = test_case_groups(Loris.data)
+      groups = test_case_groups(Tarsier.data)
       groups.sort! {|a, b| b.keys.length <=> a.keys.length }
-      grouped_lines = data_grouped(Loris.data, groups)
-      result = {:collection => [], :mode => Loris.mode}
+      grouped_lines = data_grouped(Tarsier.data, groups)
+      result = {:collection => [], :mode => Tarsier.mode}
       groups.each_with_index do |group, index|
         chunk = {}
-        if Loris.mode == :line
-          chunk[:line] = Loris.arguments[:line_number]
-          chunk[:file] = Loris.arguments[:file]
+        if Tarsier.mode == :line
+          chunk[:line] = Tarsier.arguments[:line_number]
+          chunk[:file] = Tarsier.arguments[:file]
         else
           chunk[:files] = grouped_lines[index].map do |file, lines|
             { :name => file,
-              :code => lines.sort.map {|line| "#{line + 1}: #{Loris.code_lines[file][line]}"}
+              :code => lines.sort.map {|line| "#{line + 1}: #{Tarsier.code_lines[file][line]}"}
             }
           end
         end
         chunk[:test_groups] = group
         result[:collection] << chunk
       end
-      Loris.result.data = result
-      directory = Loris.arguments[:output]
+      Tarsier.result.data = result
+      directory = Tarsier.arguments[:output]
       if directory
         report_to_html(directory)
       else
@@ -44,7 +44,7 @@ module Loris
             File.expand_path("../template/index.html.erb", File.dirname(__FILE__)), 'r:UTF-8'
           ).read
           template = ERB.new(template_string, 0, "%<>")
-          f.write template.result(Loris.result.get_binding)
+          f.write template.result(Tarsier.result.get_binding)
         end
 
         %w(css js).each do |dir|
@@ -53,7 +53,7 @@ module Loris
       end
 
       def self.report_to_stdout
-        result = Loris.result.data
+        result = Tarsier.result.data
         output = ""
         result[:collection].each_with_index do |chunk, index|
           if result[:mode] == :line
@@ -75,8 +75,8 @@ module Loris
       end
 
       def self.condition(test_cases, file, line_number)
-        if Loris.mode == :line
-          file == File.expand_path(Loris.arguments[:file]) && (line_number + 1) == Loris.arguments[:line_number].to_i
+        if Tarsier.mode == :line
+          file == File.expand_path(Tarsier.arguments[:file]) && (line_number + 1) == Tarsier.arguments[:line_number].to_i
         else
           test_cases.length > 1
         end
@@ -84,7 +84,7 @@ module Loris
 
       def self.test_case_groups(data)
         groups = []
-        Loris.data.each do |file, lines|
+        Tarsier.data.each do |file, lines|
           lines.each do |line_number, test_cases|
             if condition(test_cases, file, line_number)
               groups << test_cases unless groups.index(test_cases)
@@ -96,7 +96,7 @@ module Loris
 
       def self.data_grouped(data, groups)
         grouped_lines = []
-        Loris.data.each do |file, lines|
+        Tarsier.data.each do |file, lines|
           lines.each do |line_number, test_cases|
             group_id = groups.index(test_cases)
             unless group_id.nil?

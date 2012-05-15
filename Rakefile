@@ -1,1 +1,1 @@
-import 'lib/tasks/loris.rake'
+import 'lib/tasks/tarsier.rake'

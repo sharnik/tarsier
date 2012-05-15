@@ -1,17 +1,17 @@
 # -*- encoding: utf-8 -*-
 $:.push File.expand_path("../lib", __FILE__)
-require "loris/version"
+require "tarsier/version"
 
 Gem::Specification.new do |s|
-  s.name        = "loris"
-  s.version     = Loris::VERSION
+  s.name        = "tarsier"
+  s.version     = Tarsier::VERSION
   s.authors     = ["Daniel Salmerón Amselem", "Krzysztof Heród", "Wojciech Ogrodowczyk"]
   s.email       = ["wojciech.ogrodowczyk@xing.com"]
-  s.homepage    = "http://source.xing.com/wojciech-ogrodowczyk/loris/"
+  s.homepage    = "http://github.com/sharnik/tarsier"
   s.summary     = %q{Simple gem to uncover test duplicates.}
   s.description = %q{This gem uses rcov analyzer to go through your test suite and try to find unnecessary test duplication - code that is over-tested and testcases that do it.}
 
-  s.rubyforge_project = "loris"
+  s.rubyforge_project = "tarsier"
 
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")

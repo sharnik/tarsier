@@ -1,4 +1,4 @@
-module Loris
+module Tarsier
   class Result
     attr_accessor :data
 
