@@ -1,8 +1,4 @@
 module Tarsier
-  # Analyzer data from rcov analyzers for all code files.
-  accessor :data, {}
-  # Actual code lines of code that has been run.
-  accessor :code_lines, {}
   # Arguments with which the script is called
   accessor :arguments, {}
   # Files matching any of these will not appear in the output
@@ -10,6 +6,7 @@ module Tarsier
     __FILE__, File.expand_path('monkeypatching.rb', File.dirname(__FILE__))]
   accessor :excluded_paths, ['spec/support', 'spec/factories']
   accessor :result
+  accessor :data_collector
 
   def self.mode
     if arguments[:file] && arguments[:line_number]
@@ -32,11 +29,11 @@ module Tarsier
     end
     analyzer.analyzed_files.each do |file|
       next if Tarsier.silencers.any? {|silencer| silencer === file}
-      Tarsier.data[file] ||= {}
+      Tarsier.data_collector.data[file] ||= {}
       lines, marked_info, count_info = analyzer.data(file)
-      Tarsier.code_lines[file] = lines
+      Tarsier.data_collector.code_lines[file] = lines
       marked_info.each_with_index do |elem, index|
-        Tarsier.data[file][index] ||= {}
+        Tarsier.data_collector.data[file][index] ||= {}
         if elem
           alter_data(file, index, sender) if elem
         end
@@ -74,6 +71,7 @@ module Tarsier
   # Main method to run Tarsier: loads tests and runs them.
   #
   def self.run
+    Tarsier.data_collector = DataCollector.new
     test_files = Tarsier.arguments[:tests_path].split(',').map do |include_path|
       test_files_in_path(include_path)
     end
@@ -114,8 +112,8 @@ module Tarsier
         test_group_name = sender.class.to_s
         test_name = sender.instance_variable_get(:@__name__).to_sym
       end
-      Tarsier.data[source_file][index][test_group_name] ||= []
-      Tarsier.data[source_file][index][test_group_name] << test_name
+      Tarsier.data_collector.data[source_file][index][test_group_name] ||= []
+      Tarsier.data_collector.data[source_file][index][test_group_name] << test_name
     end
 
     def self.test_files_in_path(path)

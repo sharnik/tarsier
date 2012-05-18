@@ -11,9 +11,9 @@ module Tarsier
     end
 
     def compile_data
-      groups = test_case_groups(Tarsier.data)
+      groups = test_case_groups(Tarsier.data_collector.data)
       groups.sort! {|a, b| b.keys.length <=> a.keys.length }
-      grouped_lines = data_grouped(Tarsier.data, groups)
+      grouped_lines = data_grouped(Tarsier.data_collector.data, groups)
       result = {:collection => [], :mode => Tarsier.mode}
       groups.each_with_index do |group, index|
         chunk = {}
@@ -23,7 +23,7 @@ module Tarsier
         else
           chunk[:files] = grouped_lines[index].map do |file, lines|
             { :name => file,
-              :code => lines.sort.map {|line| "#{line + 1}: #{Tarsier.code_lines[file][line]}"}
+              :code => lines.sort.map {|line| "#{line + 1}: #{Tarsier.data_collector.code_lines[file][line]}"}
             }
           end
         end
@@ -37,7 +37,7 @@ module Tarsier
 
     def test_case_groups(data)
       groups = []
-      Tarsier.data.each do |file, lines|
+      Tarsier.data_collector.data.each do |file, lines|
         lines.each do |line_number, test_cases|
           if condition(test_cases, file, line_number)
             groups << test_cases unless groups.index(test_cases)
@@ -49,7 +49,7 @@ module Tarsier
 
     def data_grouped(data, groups)
       grouped_lines = []
-      Tarsier.data.each do |file, lines|
+      Tarsier.data_collector.data.each do |file, lines|
         lines.each do |line_number, test_cases|
           group_id = groups.index(test_cases)
           unless group_id.nil?
