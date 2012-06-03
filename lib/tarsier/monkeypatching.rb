@@ -13,7 +13,7 @@ if defined?(ActiveSupport::Testing::SetupAndTeardown::ForClassicTestUnit)
         module ForClassicTestUnit
           alias :run_without_analyzer :run
           def run(*args, &block)
-            Tarsier.test_method_wrapper(self) do
+            Tarsier.data_collector.test_method_wrapper(self) do
               run_without_analyzer(*args, &block)
             end
           end
@@ -47,7 +47,7 @@ if defined?(::Test::Unit)
       class TestCase
         alias :run_without_analyzer :run
         def run(*args, &block)
-          Tarsier.test_method_wrapper(self) do
+          Tarsier.data_collector.test_method_wrapper(self) do
             run_without_analyzer(*args, &block)
           end
         end
@@ -62,7 +62,7 @@ if defined?(::RSpec::Core::Example)
     class Example
       alias :run_without_analyzer :run
       def run(*args, &block)
-        Tarsier.test_method_wrapper(self) do
+        Tarsier.data_collector.test_method_wrapper(self) do
           run_without_analyzer(*args, &block)
         end
       end
