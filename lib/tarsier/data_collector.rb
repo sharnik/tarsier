@@ -33,6 +33,7 @@ module Tarsier
     end
 
     def test_suite_wrapper
+      #TODO Why assign here?
       result = yield
       Report.puke_out_report
     end

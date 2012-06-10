@@ -8,7 +8,7 @@ module Tarsier
     # @param [Hash] options for output
     # @return nil
     def self.puke_out_report
-      Tarsier.result.compile_data
+      Tarsier.data_analyzer.compile_data
       directory = Tarsier.arguments[:output]
       if directory
         report_to_html(directory)
@@ -25,7 +25,7 @@ module Tarsier
             File.expand_path("../template/index.html.erb", File.dirname(__FILE__)), 'r:UTF-8'
           ).read
           template = ERB.new(template_string, 0, "%<>")
-          f.write template.result(Tarsier.result.get_binding)
+          f.write template.result(Tarsier.data_analyzer.get_binding)
         end
 
         %w(css js).each do |dir|
@@ -34,7 +34,7 @@ module Tarsier
       end
 
       def self.report_to_stdout
-        result = Tarsier.result.data
+        result = Tarsier.data_analyzer.data
         output = ""
         result[:collection].each_with_index do |chunk, index|
           if result[:mode] == :line

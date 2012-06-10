@@ -6,9 +6,7 @@ namespace :tarsier do
   task :run do
     require 'tarsier'
 
-    Tarsier.set_attributes(ENV)
-    puts 'Loading Tarsier.'
-    Tarsier.run
+    Tarsier.run(ENV)
   end
 end
 
